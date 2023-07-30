@@ -14,7 +14,7 @@ export class AsksController {
         }
 
         @Get(":id")
-        async getById(@Param("id") id: number) : Promise<Ask> {
+        async getById(@Param("id") id: string) : Promise<Ask> {
             return this.askService.getById(id);
         }
         
@@ -24,13 +24,12 @@ export class AsksController {
         }
 
         @Put(":id")
-        async update(@Param("id") id:number , @Body() ask: Ask): Promise<Ask> {
-            ask.id = id;
-            return this.askService.update(ask)
+        async update(@Param("id") id:string , @Body() ask: Ask): Promise<Ask> {
+            return this.askService.update(id , ask)
         } 
 
         @Delete(":id")
-        async delete(@Param("id") id:number) {
+        async delete(@Param("id") id:string) {
             this.askService.delete(id);
         }
 }

@@ -1,44 +1,34 @@
 import { Injectable } from '@nestjs/common';
 import { Ask } from '../ask/ask';
+import {InjectModel} from "@nestjs/mongoose"
+import { Model } from 'mongoose';
 
 @Injectable()
 export class AskService {
-    asks: Ask[] = [
-        {id: 1 , ask: "Qual é a capital do Brasil?" , questions: ["Bahia" , "Rio de Janeiro"  , "Salvador" , "Brasília"] , response: "Brasília"},
-        {id: 2 , ask: "Quando foi a primeira guerra mundial?" , questions: ["1914" , "1900"  , "1855" , "1939"] , response: "1914"},
-    ];
+    constructor(@InjectModel("Ask") private readonly askModel: Model<Ask>) {}
 
-    getAll() {
-        return this.asks
+    async getAll() {
+        return await this.askModel.find().lean().exec()
     }
 
-    getById(id:number) {
-        const ask = this.asks.find(res => res.id == id);
-        return ask
+    async getById(id: string) {
+        return await this.askModel.findOne({_id: id}).lean().exec()
     }
 
-    create(ask: Ask) {
-        let lastid = 0;
-        if(this.asks.length > 0) {
-            lastid = this.asks[this.asks.length -1].id
-        }
-        ask.id = lastid + 1;
-        this.asks.push(ask)
-        return ask
+    async create(ask: Ask) {
+        const createAsk = new this.askModel(ask);
+        return await createAsk.save() 
     }
 
-    update(ask: Ask) {
-        let askArray = this.getById(ask.id);
-        if(askArray) {
-            askArray.ask = ask.ask;
-            askArray.response = ask.response
-        };
-        return askArray
+    async update(id: string , ask: Ask) {
+         await this.askModel.updateOne({_id: id} , {
+            $set: ask
+         }).exec();
+         return this.getById(id)
     }
     
-    delete(id: number) {
-        const index = this.asks.findIndex(res => res.id == id);
-        this.asks.splice(index , 1);
+    async delete(id: string) {
+        return await this.askModel.findOneAndDelete({_id: id}).exec();
 
     }
 }
